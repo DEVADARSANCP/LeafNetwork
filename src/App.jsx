@@ -14,6 +14,8 @@ import MarketIntelligence from './components/panels/MarketIntelligence';
 import Onboarding from './components/panels/Onboarding';
 import CropPlanResult, { generateCropPlan } from './components/panels/CropPlanResult';
 import CommunityPanel from './components/panels/CommunityPanel';
+import AIAssistantPanel from './components/panels/AIAssistantPanel';
+import DevPlannerPanel from './components/panels/DevPlannerPanel';
 
 const pageConfig = {
   home: { title: 'Home Dashboard', subtitle: 'Welcome to AgriIntel — your smart farming command center' },
@@ -87,7 +89,11 @@ function AppContent() {
                 ? <CropPlanningView />
                 : activeNav === 'community'
                   ? <CommunityPanel />
-                  : <ComingSoonView title={config.title} />
+                  : activeNav === 'ai-assistant'
+                    ? <AIAssistantPanel />
+                    : activeNav === 'dev-planner'
+                      ? <DevPlannerPanel />
+                      : <ComingSoonView title={config.title} />
         }
       </MainContent>
     </div>

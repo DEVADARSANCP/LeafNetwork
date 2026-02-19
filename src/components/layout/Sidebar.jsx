@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faLeaf, faHouse, faChartLine, faUsers, faCode,
+    faLeaf, faHouse, faChartLine, faUsers, faClipboardList,
     faRobot, faVirus, faSeedling
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -11,7 +11,7 @@ const topNavItems = [
 const featureNavItems = [
     { id: 'market', label: 'Market Intelligence', icon: faChartLine },
     { id: 'community', label: 'Community', icon: faUsers },
-    { id: 'dev-planner', label: 'Dev Planner', icon: faCode },
+    { id: 'dev-planner', label: 'Farm Planner', icon: faClipboardList },
     { id: 'ai-assistant', label: 'AI Assistant', icon: faRobot },
     { id: 'dashboard', label: 'Outbreak Analysis', icon: faVirus },
     { id: 'crop-planning', label: 'Crop Planning', icon: faSeedling },

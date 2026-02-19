@@ -54,7 +54,7 @@ app = FastAPI(
 # ── CORS ──
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -323,4 +323,62 @@ async def market_data(
         raise HTTPException(status_code=500, detail=f"Market data fetch failed: {str(e)}")
 
 
+# ── AI Assistant Chat ──
+from pydantic import BaseModel
+from typing import List
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+
+@app.post("/api/assistant/chat")
+async def assistant_chat(req: ChatRequest):
+    """AI farming assistant powered by Groq LLM."""
+    from config import GROQ_API_KEY, GROQ_MODEL
+    import httpx
+
+    if not GROQ_API_KEY:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY is not configured")
+
+    system_prompt = (
+        "You are an expert AI agricultural assistant for Indian farmers. "
+        "You provide advice on crop diseases, mandi prices, selling strategies, "
+        "crop planning, weather risks, and government schemes. "
+        "Keep answers concise, practical, and actionable. "
+        "Use bullet points for lists. "
+        "If asked about prices, mention typical mandi ranges. "
+        "Support questions in English, Hindi, and Tamil. "
+        "Always be encouraging and supportive of farmers."
+    )
+
+    groq_messages = [{"role": "system", "content": system_prompt}]
+    for m in req.messages:
+        if m.role in ("user", "assistant"):
+            groq_messages.append({"role": m.role, "content": m.content})
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": GROQ_MODEL,
+                    "messages": groq_messages,
+                    "temperature": 0.7,
+                    "max_tokens": 1024,
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            reply = data["choices"][0]["message"]["content"]
+            return {"reply": reply}
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Groq API error: {e.response.text}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
