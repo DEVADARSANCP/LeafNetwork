@@ -10,9 +10,18 @@ export default function VisionAgentPanel() {
     const fileInputRef = useRef(null);
     const [dragOver, setDragOver] = useState(false);
     const [fileName, setFileName] = useState('');
+    const [preview, setPreview] = useState(null);
 
     const handleFile = useCallback(async (file) => {
         if (!file || !file.type.startsWith('image/')) return;
+
+        // Create preview immediately
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+
         setFileName(file.name);
         dispatch({ type: 'VISION_LOADING' });
         try {
@@ -45,6 +54,12 @@ export default function VisionAgentPanel() {
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
+                style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    minHeight: preview ? '260px' : '200px',
+                    padding: preview ? '0' : 'var(--space-lg)'
+                }}
             >
                 <input
                     ref={fileInputRef}
@@ -53,19 +68,65 @@ export default function VisionAgentPanel() {
                     style={{ display: 'none' }}
                     onChange={(e) => handleFile(e.target.files[0])}
                 />
-                {loading ? (
+
+                {preview ? (
                     <>
-                        <span className="spinner"></span>
-                        <span className="upload-text">Analyzing image…</span>
+                        <img
+                            src={preview}
+                            alt="Leaf Preview"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                display: 'block'
+                            }}
+                        />
+                        {loading && (
+                            <div style={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'rgba(0,0,0,0.6)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '12px'
+                            }}>
+                                <span className="spinner"></span>
+                                <span className="upload-text">Analyzing image…</span>
+                            </div>
+                        )}
+                        {!loading && (
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '12px',
+                                right: '12px',
+                                background: 'rgba(0,0,0,0.7)',
+                                padding: '4px 10px',
+                                borderRadius: 'var(--radius-sm)',
+                                fontSize: 'var(--font-size-xs)',
+                                color: '#fff',
+                                pointerEvents: 'none'
+                            }}>
+                                Click to change image
+                            </div>
+                        )}
                     </>
                 ) : (
-                    <>
-                        <span className="upload-icon">📷</span>
-                        <span className="upload-text">
-                            {fileName ? `Uploaded: ${fileName}` : 'Upload leaf image for analysis'}
-                        </span>
-                        <span className="upload-hint">Drag & drop or click to browse · JPG, PNG up to 10MB</span>
-                    </>
+                    loading ? (
+                        <>
+                            <span className="spinner"></span>
+                            <span className="upload-text">Analyzing image…</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="upload-icon">📷</span>
+                            <span className="upload-text">
+                                {fileName ? `Uploaded: ${fileName}` : 'Upload leaf image for analysis'}
+                            </span>
+                            <span className="upload-hint">Drag & drop or click to browse · JPG, PNG up to 10MB</span>
+                        </>
+                    )
                 )}
             </div>
 
@@ -119,8 +180,8 @@ export default function VisionAgentPanel() {
                 </div>
             )}
 
-            {/* Empty state */}
-            {!data && !loading && !error && (
+            {/* Empty state (only if no data and no preview) */}
+            {!data && !loading && !error && !preview && (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)', padding: 'var(--space-md) 0' }}>
                     Upload a plant leaf image to begin disease analysis
                 </div>

@@ -100,9 +100,33 @@ export default function SatelliteAgentPanel() {
                         colorClass={getNdviColor(data.ndvi_score)}
                     />
 
-                    <div className="map-placeholder">
-                        <span className="map-icon">🗺️</span>
-                        <span className="map-text">Satellite viewport — {location.lat.toFixed(2)}°N, {location.lon.toFixed(2)}°E</span>
+                    <div className="map-placeholder" style={{ padding: 0, overflow: 'hidden', minHeight: '250px', position: 'relative' }}>
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            style={{ border: 0, display: 'block', minHeight: '250px' }}
+                            src={`https://maps.google.com/maps?q=${location.lat},${location.lon}&t=k&z=15&ie=UTF8&iwloc=&output=embed`}
+                            allowFullScreen
+                        ></iframe>
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '12px',
+                            left: '12px',
+                            background: 'rgba(0, 0, 0, 0.7)',
+                            backdropFilter: 'blur(4px)',
+                            padding: '6px 10px',
+                            borderRadius: 'var(--radius-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                        }}>
+                            <span className="map-icon" style={{ fontSize: '14px' }}>🗺️</span>
+                            <span className="map-text" style={{ color: '#fff', fontSize: '11px', fontWeight: 500 }}>
+                                Satellite viewport — {location.lat.toFixed(4)}°N, {location.lon.toFixed(4)}°E
+                            </span>
+                        </div>
                     </div>
 
                     <div className="field-row">
